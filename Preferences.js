@@ -75,18 +75,15 @@ Preferences.prototype = {
     if (typeof prefName == "object" && prefName.constructor.name == Array.name)
       return prefName.map(function(v) this.get(v), this);
 
-    try {
-      switch (this._prefSvc.getPrefType(prefName)) {
-        case Ci.nsIPrefBranch.PREF_STRING:
-          return this._prefSvc.getCharPref(prefName);
-        case Ci.nsIPrefBranch.PREF_INT:
-          return this._prefSvc.getIntPref(prefName);
-        case Ci.nsIPrefBranch.PREF_BOOL:
-          return this._prefSvc.getBoolPref(prefName);
-      }
+    switch (this._prefSvc.getPrefType(prefName)) {
+      case Ci.nsIPrefBranch.PREF_STRING:
+        return this._prefSvc.getCharPref(prefName);
+      case Ci.nsIPrefBranch.PREF_INT:
+        return this._prefSvc.getIntPref(prefName);
+      case Ci.nsIPrefBranch.PREF_BOOL:
+        return this._prefSvc.getBoolPref(prefName);
     }
-    catch (ex) {}
-  
+
     return defaultValue;
   },
 
