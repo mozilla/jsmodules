@@ -113,7 +113,7 @@ Preferences.prototype = {
   // FIXME: make the methods below accept an array of pref names.
 
   has: function(prefName) {
-    return (this._prefSvc.getPrefType(prefName) != this._prefSvc.PREF_INVALID);
+    return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
   },
 
   modified: function(prefName) {
