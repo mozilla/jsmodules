@@ -78,10 +78,13 @@ Preferences.prototype = {
     switch (this._prefSvc.getPrefType(prefName)) {
       case Ci.nsIPrefBranch.PREF_STRING:
         return this._prefSvc.getCharPref(prefName);
+
       case Ci.nsIPrefBranch.PREF_INT:
         return this._prefSvc.getIntPref(prefName);
+
       case Ci.nsIPrefBranch.PREF_BOOL:
         return this._prefSvc.getBoolPref(prefName);
+
       case Ci.nsIPrefBranch.PREF_INVALID:
       default:
         return defaultValue;
@@ -99,9 +102,11 @@ Preferences.prototype = {
         case "number":
           this._prefSvc.setIntPref(prefName, prefValue);
           break;
+
         case "boolean":
           this._prefSvc.setBoolPref(prefName, prefValue);
           break;
+
         case "string":
         default:
           this._prefSvc.setCharPref(prefName, prefValue);
