@@ -82,9 +82,10 @@ Preferences.prototype = {
         return this._prefSvc.getIntPref(prefName);
       case Ci.nsIPrefBranch.PREF_BOOL:
         return this._prefSvc.getBoolPref(prefName);
+      case Ci.nsIPrefBranch.PREF_INVALID:
+      default:
+        return defaultValue;
     }
-
-    return defaultValue;
   },
 
   set: function(prefName, prefValue) {
