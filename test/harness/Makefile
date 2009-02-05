@@ -40,7 +40,8 @@
 sdkdir ?= ${MOZSDKDIR}
 xulrunner_bin ?= ${XULRUNNER_BIN}
 harnessdir = ../harness
-profiledir = ../profile
+# profiledir needs to be an absolute path on Mac OS X (FIXME: file bug).
+profiledir = $(abspath ../profile)
 topsrcdir ?= ${TOPSRCDIR}
 native_topsrcdir ?= ${NATIVE_TOPSRCDIR}
 sys := $(shell uname -s)
@@ -81,12 +82,12 @@ endif
 # NO_EM_RESTART prevents XULRunner from restarting when registering components.
 # XPCOM_DEBUG_BREAK="warn" prevents XULRunner from showing an alert dialog
 # for assertions on Windows.
-env = NATIVE_TOPSRCDIR="$(native_topsrcdir)" TOPSRCDIR="$(topsrcdir)" \
-      NO_EM_RESTART=1 XPCOM_DEBUG_BREAK="warn"
+xulrunner_env = NATIVE_TOPSRCDIR="$(native_topsrcdir)" TOPSRCDIR="$(topsrcdir)" \
+                NO_EM_RESTART=1 XPCOM_DEBUG_BREAK="warn"
 
 # The XULRunner test executor.
 # Note: the path to application.ini must be absolute on Mac OS X.
-xulrunner = $(env) $(xulrunner_bin) \
+xulrunner = $(xulrunner_bin) \
               -app $(abspath $(harnessdir)/app/application.ini) \
               -profile $(profiledir) -no-remote
 
@@ -120,14 +121,16 @@ all: $(tests:.js=)
 # fixme: hiding commands here means they can't be copy-and-pasted to run by hand
 $(tests:.js=): $(tests)
 	@if [ ! -e "$(profiledir)" ]; then \
-	  mkdir -p $(profiledir)/extensions; \
-          $(configure_profile) \
+	  mkdir $(profiledir); \
 	  $(xulrunner) 2> /dev/null 1>&2; \
+	  $(configure_profile) \
+	  $(xulrunner) 2> /dev/null 1>&2; \
+	  sleep 5; \
 	fi
 	@if [ $(os) = Darwin ]; then \
-	  $(xulrunner) $(head) -f $(abspath $(@).js) $(tail) 2> $(@).log 1>&2; \
+	  $(xulrunner_env) $(xulrunner) $(head) -f $(abspath $(@).js) $(tail) 2> $(@).log 1>&2; \
 	else \
-	  $(xulrunner) $(head) -f $(@).js $(tail) 2> $(@).log 1>&2; \
+	  $(xulrunner_env) $(xulrunner) $(head) -f $(@).js $(tail) 2> $(@).log 1>&2; \
 	fi
 	@if [ `grep -c '\*\*\* PASS' $(@).log` = 0 ]; then \
 	  echo $(echo_opts) "$(@):\tFAIL"; \
@@ -135,9 +138,7 @@ $(tests:.js=): $(tests)
 	  echo $(echo_opts) "$(@):\tPASS"; \
 	fi
 
-# XXX Is it safe to pass rm the -r and -f options below?  It feels scary.
-# XXX Should we delete the log files too?
-
 .PHONY: clean
 clean:
-	rm -rfv $(profiledir)
+	rm -rf $(profiledir)
+	rm -f test*.log
