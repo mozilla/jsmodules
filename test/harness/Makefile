@@ -37,8 +37,16 @@
 #
 # ***** END LICENSE BLOCK *****
 
-sdkdir ?= ${MOZSDKDIR}
 xulrunner_bin ?= ${XULRUNNER_BIN}
+ifeq ($(xulrunner_bin),)
+  $(warning No 'xulrunner_bin' variable given)
+  $(warning It should point to the location of a XULRunner/Firefox executable)
+  $(warning For example: "make xulrunner_bin=/usr/bin/xulrunner")
+  $(warning Or set the XULRUNNER_BIN environment variable to point to it)
+  $(error Can't continue.)
+endif
+
+sdkdir ?= ${MOZSDKDIR}
 harnessdir = ../harness
 # profiledir needs to be an absolute path on Mac OS X (FIXME: file bug).
 profiledir = $(abspath ../profile)
