@@ -70,9 +70,7 @@ Preferences.prototype = {
     * @returns the value of the pref, if any; otherwise the default value
     */
   get: function(prefName, defaultValue) {
-    // We can't check for |prefName.constructor == Array| here, since we have
-    // a different global object, so we check the constructor name instead.
-    if (typeof prefName == "object" && prefName.constructor.name == Array.name)
+    if (isArray(prefName))
       return prefName.map(function(v) this.get(v), this);
 
     switch (this._prefSvc.getPrefType(prefName)) {
@@ -92,26 +90,25 @@ Preferences.prototype = {
   },
 
   set: function(prefName, prefValue) {
-    // We can't check for |prefName.constructor == Object| here, since we have
-    // a different global object, so we check the constructor name instead.
-    if (typeof prefName == "object" && prefName.constructor.name == Object.name)
+    if (isObject(prefName)) {
       for (let [name, value] in Iterator(prefName))
         this.set(name, value);
-    else {
-      switch (typeof prefValue) {
-        case "number":
-          this._prefSvc.setIntPref(prefName, prefValue);
-          break;
+      return;
+    }
 
-        case "boolean":
-          this._prefSvc.setBoolPref(prefName, prefValue);
-          break;
+    switch (typeof prefValue) {
+      case "number":
+        this._prefSvc.setIntPref(prefName, prefValue);
+        break;
 
-        case "string":
-        default:
-          this._prefSvc.setCharPref(prefName, prefValue);
-          break;
-      }
+      case "boolean":
+        this._prefSvc.setBoolPref(prefName, prefValue);
+        break;
+
+      case "string":
+      default:
+        this._prefSvc.setCharPref(prefName, prefValue);
+        break;
     }
   },
 
@@ -138,9 +135,7 @@ Preferences.prototype = {
   },
 
   reset: function(prefName) {
-    // We can't check for |prefName.constructor == Array| here, since we have
-    // a different global object, so we check the constructor name instead.
-    if (typeof prefName == "object" && prefName.constructor.name == Array.name) {
+    if (isArray(prefName)) {
       prefName.map(function(v) this.reset(v), this);
       return;
     }
@@ -181,3 +176,15 @@ Preferences.prototype = {
 // preferences directly via the constructor without having to create an instance
 // first.
 Preferences.__proto__ = Preferences.prototype;
+
+function isArray(val) {
+  // We can't check for |val.constructor == Array| here, since we might have
+  // a different global object, so we check the constructor name instead.
+  return (typeof val == "object" && val.constructor.name == Array.name);
+}
+
+function isObject(val) {
+  // We can't check for |val.constructor == Object| here, since we might have
+  // a different global object, so we check the constructor name instead.
+  return (typeof val == "object" && val.constructor.name == Object.name);
+}
