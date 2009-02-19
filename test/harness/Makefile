@@ -100,17 +100,28 @@ xulrunner = $(xulrunner_bin) \
               -profile $(profiledir) -no-remote
 
 # The head and tail files to evaluate before and after each test.
+#
+# Head files are evaluated in the order:
+#   harness's head.js
+#   test dir's head.js (if present)
+#   test dir's head_*.js (if any)
+#
+# Tail files are evaluated in the reverse order:
+#   test dir's tail_*.js (if any)
+#   test dir's tail.js (if present)
+#   harness's tail.js.
+#
 # XXX We shouldn't need to resolve these to absolute paths here, as the executor
 # runs them through nsICommandLine::resolveFile, which should handle that,
 # but for some reason that method isn't resolving relative paths on Mac OS X,
 # so we have to resolve them here for that OS.
 # FIXME: stop doing this here and in the commands once bug 476326 is fixed.
 ifeq ($(os), Darwin)
-head := -f $(abspath $(harnessdir)/head.js) -f $(abspath head.js) $(patsubst %,-f %,$(abspath $(wildcard head_*.js)))
-tail := $(patsubst %,-f %,$(abspath $(wildcard tail*.js))) -f $(abspath $(harnessdir)/tail.js)
+head := -f $(abspath $(harnessdir)/head.js) $(patsubst %,-f %,$(abspath $(wildcard head.js))) $(patsubst %,-f %,$(abspath $(wildcard head_*.js)))
+tail := $(patsubst %,-f %,$(abspath $(wildcard tail_*.js))) $(patsubst %,-f %,$(abspath $(wildcard tail.js))) -f $(abspath $(harnessdir)/tail.js)
 else
-head := -f $(harnessdir)/head.js -f head.js $(patsubst %,-f %,$(wildcard head_*.js))
-tail := $(patsubst %,-f %,$(wildcard tail*.js)) -f $(harnessdir)/tail.js
+head := -f $(harnessdir)/head.js $(patsubst %,-f %,$(wildcard head.js)) $(patsubst %,-f %,$(wildcard head_*.js))
+tail := $(patsubst %,-f %,$(wildcard tail_*.js)) $(patsubst %,-f %,$(wildcard tail.js)) -f $(harnessdir)/tail.js
 endif
 
 # On Windows and Linux, you have to pass echo the -e option to enable backslash
