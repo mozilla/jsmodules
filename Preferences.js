@@ -75,7 +75,7 @@ Preferences.prototype = {
 
     switch (this._prefSvc.getPrefType(prefName)) {
       case Ci.nsIPrefBranch.PREF_STRING:
-        return this._prefSvc.getCharPref(prefName);
+        return this._prefSvc.getComplexValue(prefName, Ci.nsISupportsString).data;
 
       case Ci.nsIPrefBranch.PREF_INT:
         return this._prefSvc.getIntPref(prefName);
@@ -106,9 +106,13 @@ Preferences.prototype = {
         break;
 
       case "string":
-      default:
-        this._prefSvc.setCharPref(prefName, prefValue);
+      default: {
+        let string = Cc["@mozilla.org/supports-string;1"].
+                     createInstance(Ci.nsISupportsString);
+        string.data = prefValue;
+        this._prefSvc.setComplexValue(prefName, Ci.nsISupportsString, string);
         break;
+      }
     }
   },
 

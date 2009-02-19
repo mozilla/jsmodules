@@ -31,6 +31,28 @@ function test_set_get_multiple_prefs() {
   Preferences.resetBranch("test_set_get_multiple_prefs.");
 }
 
+function test_set_get_unicode_pref() {
+  Preferences.set("test_set_get_unicode_pref", String.fromCharCode(960));
+  do_check_eq(Preferences.get("test_set_get_unicode_pref"), String.fromCharCode(960));
+
+  // Clean up.
+  Preferences.reset("test_set_get_unicode_pref");
+}
+
+// Make sure that we can get a string pref that we didn't set ourselves
+// (i.e. that the way we get a string pref using getComplexValue doesn't
+// hork us getting a string pref that wasn't set using setComplexValue).
+function test_get_string_pref() {
+  let svc = Cc["@mozilla.org/preferences-service;1"].
+            getService(Ci.nsIPrefService).
+            getBranch("");
+  svc.setCharPref("test_get_string_pref", "a normal string");
+  do_check_eq(Preferences.get("test_get_string_pref"), "a normal string");
+
+  // Clean up.
+  Preferences.reset("test_get_string_pref");
+}
+
 function test_reset_pref() {
   Preferences.set("test_reset_pref", 1);
   Preferences.reset("test_reset_pref");
