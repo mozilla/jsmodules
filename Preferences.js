@@ -99,6 +99,10 @@ Preferences.prototype = {
     switch (typeof prefValue) {
       case "number":
         this._prefSvc.setIntPref(prefName, prefValue);
+        if (prefValue % 1 != 0)
+          Cu.reportError("WARNING: setting " + prefName + " pref to non-integer number " +
+                         prefValue + " converts it to integer number " + this.get(prefName) +
+                         "; to retain precision, store non-integer numbers as strings");
         break;
 
       case "boolean":
