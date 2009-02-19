@@ -138,6 +138,13 @@ Preferences.prototype = {
   },
 
   reset: function(prefName) {
+    // We can't check for |prefName.constructor == Array| here, since we have
+    // a different global object, so we check the constructor name instead.
+    if (typeof prefName == "object" && prefName.constructor.name == Array.name) {
+      prefName.map(function(v) this.reset(v), this);
+      return;
+    }
+
     try {
       this._prefSvc.clearUserPref(prefName);
     }
@@ -149,13 +156,23 @@ Preferences.prototype = {
       // resetting first or trap exceptions after the fact.  It passes through
       // other exceptions, however, so callers know about them, since we don't
       // know what other exceptions might be thrown and what they might mean.
-      if (ex.result != Components.results.NS_ERROR_UNEXPECTED)
+      if (ex.result != Cr.NS_ERROR_UNEXPECTED)
         throw ex;
     }
   },
 
   resetBranch: function(prefBranch) {
-    this._prefSvc.resetBranch(prefBranch);
+    try {
+      this._prefSvc.resetBranch(prefBranch);
+    }
+    catch(ex) {
+      // The current implementation of nsIPrefBranch in Mozilla
+      // doesn't implement resetBranch, so we do it ourselves.
+      if (ex.result == Cr.NS_ERROR_NOT_IMPLEMENTED)
+        this.reset(this._prefSvc.getChildList(prefBranch, []));
+      else
+        throw ex;
+    }
   }
 
 };
