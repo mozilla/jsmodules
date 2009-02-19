@@ -138,7 +138,20 @@ Preferences.prototype = {
   },
 
   reset: function(prefName) {
-    this._prefSvc.clearUserPref(prefName);
+    try {
+      this._prefSvc.clearUserPref(prefName);
+    }
+    catch(ex) {
+      // The pref service throws NS_ERROR_UNEXPECTED when the caller tries
+      // to reset a pref that doesn't exist or is already set to its default
+      // value.  This interface fails silently in those cases, so callers
+      // can unconditionally reset a pref without having to check if it needs
+      // resetting first or trap exceptions after the fact.  It passes through
+      // other exceptions, however, so callers know about them, since we don't
+      // know what other exceptions might be thrown and what they might mean.
+      if (ex.result != Components.results.NS_ERROR_UNEXPECTED)
+        throw ex;
+    }
   },
 
   resetBranch: function(prefBranch) {
