@@ -1,22 +1,5 @@
 Components.utils.import("resource://jsmodules/Preferences.js");
 
-function run_test() {
-  // Run tests manually ourselves instead of letting the harness enumerate
-  // and run them so we can reset them all afterwards so they don't persist
-  // in the test profile and affect future test runs.
-  
-  // XXX Does this cause other prefs to get reset that should persist?
-
-  test_set_get_pref();
-  test_set_get_multiple_prefs();
-  test_reset_pref();
-  test_reset_pref_branch();
-  test_reset_nonexistent_pref();
-  test_reset_nonexistent_pref_branch();
-
-  Preferences.resetBranch("");
-}
-
 function test_set_get_pref() {
   Preferences.set("test_set_get_pref.integer", 1);
   do_check_eq(Preferences.get("test_set_get_pref.integer"), 1);
@@ -26,6 +9,9 @@ function test_set_get_pref() {
 
   Preferences.set("test_set_get_pref.boolean", true);
   do_check_eq(Preferences.get("test_set_get_pref.boolean"), true);
+
+  // Clean up.
+  Preferences.resetBranch("test_set_get_pref.");
 }
 
 function test_set_get_multiple_prefs() {
@@ -40,6 +26,9 @@ function test_set_get_multiple_prefs() {
   do_check_eq(i, 1);
   do_check_eq(s, "foo");
   do_check_eq(b, true);
+
+  // Clean up.
+  Preferences.resetBranch("test_set_get_multiple_prefs.");
 }
 
 function test_reset_pref() {
