@@ -112,28 +112,6 @@ Preferences.prototype = {
     }
   },
 
-  // FIXME: make the methods below accept an array of pref names.
-
-  has: function(prefName) {
-    return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
-  },
-
-  modified: function(prefName) {
-    return (this.has(prefName) && this._prefSvc.prefHasUserValue(prefName));
-  },
-
-  locked: function(prefName) {
-    return this._prefSvc.isLocked(prefName);
-  },
-
-  lock: function(prefName) {
-    this._prefSvc.lockPref(prefName);
-  },
-
-  unlock: function(prefName) {
-    this._prefSvc.unlockPref(prefName);
-  },
-
   reset: function(prefName) {
     if (isArray(prefName)) {
       prefName.map(function(v) this.reset(v), this);
@@ -154,6 +132,28 @@ Preferences.prototype = {
       if (ex.result != Cr.NS_ERROR_UNEXPECTED)
         throw ex;
     }
+  },
+
+  // FIXME: make the methods below accept an array of pref names.
+
+  has: function(prefName) {
+    return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
+  },
+
+  modified: function(prefName) {
+    return (this.has(prefName) && this._prefSvc.prefHasUserValue(prefName));
+  },
+
+  locked: function(prefName) {
+    return this._prefSvc.isLocked(prefName);
+  },
+
+  lock: function(prefName) {
+    this._prefSvc.lockPref(prefName);
+  },
+
+  unlock: function(prefName) {
+    this._prefSvc.unlockPref(prefName);
   },
 
   resetBranch: function(prefBranch) {
