@@ -39,6 +39,33 @@ function test_set_get_unicode_pref() {
   Preferences.reset("test_set_get_unicode_pref");
 }
 
+function test_set_null_pref() {
+  try {
+    Preferences.set("test_set_null_pref", null);
+    // We expect this to throw, so the test is designed to fail if it doesn't.
+    do_check_true(false);
+  }
+  catch(ex) {}
+}
+
+function test_set_undefined_pref() {
+  try {
+    Preferences.set("test_set_undefined_pref");
+    // We expect this to throw, so the test is designed to fail if it doesn't.
+    do_check_true(false);
+  }
+  catch(ex) {}
+}
+
+function test_set_unsupported_pref() {
+  try {
+    Preferences.set("test_set_unsupported_pref", new Array());
+    // We expect this to throw, so the test is designed to fail if it doesn't.
+    do_check_true(false);
+  }
+  catch(ex) {}
+}
+
 // Make sure that we can get a string pref that we didn't set ourselves
 // (i.e. that the way we get a string pref using getComplexValue doesn't
 // hork us getting a string pref that wasn't set using setComplexValue).

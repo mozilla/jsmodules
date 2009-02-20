@@ -96,27 +96,37 @@ Preferences.prototype = {
       return;
     }
 
-    switch (typeof prefValue) {
-      case "number":
-        this._prefSvc.setIntPref(prefName, prefValue);
-        if (prefValue % 1 != 0)
-          Cu.reportError("WARNING: setting " + prefName + " pref to non-integer number " +
-                         prefValue + " converts it to integer number " + this.get(prefName) +
-                         "; to retain precision, store non-integer numbers as strings");
+    let prefType;
+    if (typeof prefValue != "undefined" && prefValue != null)
+      prefType = prefValue.constructor.name;
+
+    switch (prefType) {
+      case "String":
+        {
+          let string = Cc["@mozilla.org/supports-string;1"].
+                       createInstance(Ci.nsISupportsString);
+          string.data = prefValue;
+          this._prefSvc.setComplexValue(prefName, Ci.nsISupportsString, string);
+        }
         break;
 
-      case "boolean":
+      case "Number":
+        this._prefSvc.setIntPref(prefName, prefValue);
+        if (prefValue % 1 != 0)
+          Cu.reportError("Warning: setting the " + prefName + " pref to the " +
+                         "non-integer number " + prefValue + " converted it " +
+                         "to the integer number " + this.get(prefName) +
+                         "; to retain fractional precision, store non-integer " +
+                         "numbers as strings.");
+        break;
+
+      case "Boolean":
         this._prefSvc.setBoolPref(prefName, prefValue);
         break;
 
-      case "string":
-      default: {
-        let string = Cc["@mozilla.org/supports-string;1"].
-                     createInstance(Ci.nsISupportsString);
-        string.data = prefValue;
-        this._prefSvc.setComplexValue(prefName, Ci.nsISupportsString, string);
-        break;
-      }
+      default:
+        throw "can't set pref " + prefName + " to value '" + prefValue +
+              "'; it isn't a String, Number, or Boolean";
     }
   },
 
@@ -186,13 +196,17 @@ Preferences.prototype = {
 Preferences.__proto__ = Preferences.prototype;
 
 function isArray(val) {
-  // We can't check for |val.constructor == Array| here, since we might have
-  // a different global object, so we check the constructor name instead.
-  return (typeof val == "object" && val.constructor.name == Array.name);
+  // We can't check for |val.constructor == Array| here, since the value
+  // might be from a different context whose Array constructor is not the same
+  // as ours, so instead we match based on the name of the constructor.
+  return (typeof val != "undefined" && val != null && typeof val == "object" &&
+          val.constructor.name == "Array");
 }
 
 function isObject(val) {
-  // We can't check for |val.constructor == Object| here, since we might have
-  // a different global object, so we check the constructor name instead.
-  return (typeof val == "object" && val.constructor.name == Object.name);
+  // We can't check for |val.constructor == Object| here, since the value
+  // might be from a different context whose Object constructor is not the same
+  // as ours, so instead we match based on the name of the constructor.
+  return (typeof val != "undefined" && val != null && typeof val == "object" &&
+          val.constructor.name == "Object");
 }
