@@ -46,7 +46,6 @@ ifeq ($(xulrunner_bin),)
   $(error Can't continue.)
 endif
 
-sdkdir ?= ${MOZSDKDIR}
 harnessdir = ../harness
 # profiledir needs to be an absolute path on Mac OS X (FIXME: file bug).
 profiledir = $(abspath ../profile)
