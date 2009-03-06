@@ -105,3 +105,62 @@ function test_reset_nonexistent_pref() {
 function test_reset_nonexistent_pref_branch() {
   Preferences.resetBranch("test_reset_nonexistent_pref_branch.");
 }
+
+function test_observe_prefs_function() {
+  let observed = false;
+  let observer = function() { observed = !observed };
+
+  Preferences.observe("test_observe_prefs_function", observer);
+  Preferences.set("test_observe_prefs_function", "something");
+  do_check_true(observed);
+
+  Preferences.ignore("test_observe_prefs_function", observer);
+  Preferences.set("test_observe_prefs_function", "something else");
+  do_check_true(observed);
+
+  // Clean up.
+  Preferences.reset("test_observe_prefs_function");
+}
+
+function test_observe_prefs_object() {
+  let observer = {
+    observed: false,
+    observe: function() {
+      this.observed = !this.observed;
+    }
+  };
+
+  Preferences.observe("test_observe_prefs_object", observer.observe, observer);
+  Preferences.set("test_observe_prefs_object", "something");
+  do_check_true(observer.observed);
+
+  Preferences.ignore("test_observe_prefs_object", observer.observe, observer);
+  Preferences.set("test_observe_prefs_object", "something else");
+  do_check_true(observer.observed);
+
+  // Clean up.
+  Preferences.reset("test_observe_prefs_object");
+}
+
+function test_observe_prefs_nsIObserver() {
+  let observer = {
+    observed: false,
+    observe: function(subject, topic, data) {
+      this.observed = !this.observed;
+      do_check_true(subject instanceof Ci.nsIPrefBranch2);
+      do_check_eq(topic, "nsPref:changed");
+      do_check_eq(data, "test_observe_prefs_nsIObserver");
+    }
+  };
+
+  Preferences.observe("test_observe_prefs_nsIObserver", observer);
+  Preferences.set("test_observe_prefs_nsIObserver", "something");
+  do_check_true(observer.observed);
+
+  Preferences.ignore("test_observe_prefs_nsIObserver", observer);
+  Preferences.set("test_observe_prefs_nsIObserver", "something else");
+  do_check_true(observer.observed);
+
+  // Clean up.
+  Preferences.reset("test_observe_prefs_nsIObserver");
+}
