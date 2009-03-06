@@ -156,25 +156,6 @@ Preferences.prototype = {
 
 
   /**
-   * A cache of preference branch observers.
-   *
-   * We use this to remove observers when a caller calls |remove|.
-   *
-   * XXX This might result in reference cycles, causing memory leaks,
-   * if we hold a reference to an observer that holds a reference to us.
-   * Could we fix that by making this an independent top-level object
-   * rather than a property of the Preferences prototype?
-   *
-   * Note: all Preferences instances share this object, since all of them
-   * have the same prototype.  This is intentional, because we want callers
-   * to be able to remove an observer using a different Preferences object
-   * than the one with which they added it.  But it means we have to index
-   * the observers in this object by their complete pref branch, not just
-   * the branch relative to the root branch of any given Preferences object.
-   */
-  _observers: [],
-
-  /**
    * Observe a pref branch.  The callback can be a function, a method
    * (when thisObject is provided), or any object that implements nsIObserver.
    * The pref branch can be any string and is appended to the root branch
@@ -204,7 +185,7 @@ Preferences.prototype = {
 
     let observer = new PrefObserver(fullBranch, callback, thisObject);
     Preferences._prefSvc.addObserver(fullBranch, observer, true);
-    Preferences._observers.push(observer);
+    observers.push(observer);
 
     return observer;
   },
@@ -232,13 +213,13 @@ Preferences.prototype = {
     // or thisObject, as far as I know, since the keys to JavaScript hashes
     // (a.k.a. objects) can apparently only be primitive values.
     let [observer] =
-      Preferences._observers.filter(function(v) v.branch     == fullBranch &&
-                                                v.callback   == callback &&
-                                                v.thisObject == thisObject);
+      observers.filter(function(v) v.branch     == fullBranch &&
+                                   v.callback   == callback &&
+                                   v.thisObject == thisObject);
 
     if (observer) {
       Preferences._prefSvc.removeObserver(fullBranch, observer);
-      Preferences._observers.splice(Preferences._observers.indexOf(observer), 1);
+      observers.splice(observers.indexOf(observer), 1);
     }
   },
 
@@ -286,6 +267,19 @@ Preferences.prototype = {
 // preferences directly via the constructor without having to create an instance
 // first.
 Preferences.__proto__ = Preferences.prototype;
+
+/**
+ * A cache of preference observers.
+ *
+ * We use this to remove observers when a caller calls |remove|.
+ *
+ * All Preferences instances share this object, because we want callers
+ * to be able to remove an observer using a different Preferences object
+ * than the one with which they added it.  That means we have to provide
+ * the observers in this object their complete pref branch, not just
+ * the branch relative to the root branch of any given Preferences object.
+ */
+let observers = [];
 
 function PrefObserver(branch, callback, thisObject) {
   this.branch = branch;
