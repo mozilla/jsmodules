@@ -184,3 +184,15 @@ function test_observe_prefs_nsIObserver() {
   // Clean up.
   Preferences.reset("test_observe_prefs_nsIObserver");
 }
+
+function test_observe_exact_pref() {
+  let observed = false;
+  let observer = function() { observed = !observed };
+
+  Preferences.observe("test_observe_exact_pref", observer);
+  Preferences.set("test_observe_exact_pref.sub-pref", "something");
+  do_check_false(observed);
+
+  // Clean up.
+  Preferences.reset("test_observe_exact_pref.sub-pref");
+}

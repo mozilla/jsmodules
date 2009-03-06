@@ -188,6 +188,73 @@ Preferences.prototype = {
 
 
   /**
+   * Start observing a pref.
+   *
+   * The callback can be a function or any object that implements nsIObserver.
+   * When the callback is a function and thisObject is provided, it gets called
+   * as a method of thisObject.
+   *
+   * @param   prefName    {String}
+   *          the name of the pref to observe
+   *
+   * @param   callback    {Function|Object}
+   *          the code to notify when the pref changes;
+   *
+   * @param   thisObject  {Object}  [optional]
+   *          the object to use as |this| when calling a Function callback;
+   *
+   * @returns the wrapped observer
+   */
+  observe: function(prefName, callback, thisObject) {
+    let fullPrefName = this._prefBranch + (prefName || "");
+
+    let observer = new PrefObserver(fullPrefName, callback, thisObject);
+    Preferences._prefSvc.addObserver(fullPrefName, observer, true);
+    observers.push(observer);
+
+    return observer;
+  },
+
+  /**
+   * Stop observing a pref.
+   *
+   * You must call this method with the same prefName, callback, and thisObject
+   * with which you originally registered the observer.  However, you don't have
+   * to call this method on the same exact instance of Preferences; you can call
+   * it on any instance.  For example, the following code first starts and then
+   * stops observing the "foo.bar.baz" preference:
+   *
+   *   let observer = function() {...};
+   *   Preferences.observe("foo.bar.baz", observer);
+   *   new Preferences("foo.bar.").ignore("baz", observer);
+   *
+   * @param   prefName    {String}
+   *          the name of the pref being observed
+   *
+   * @param   callback    {Function|Object}
+   *          the code being notified when the pref changes
+   *
+   * @param   thisObject  {Object}  [optional]
+   *          the object being used as |this| when calling a Function callback
+   */
+  ignore: function(prefName, callback, thisObject) {
+    let fullPrefName = this._prefBranch + (prefName || "");
+
+    // This seems fairly inefficient, but I'm not sure how much better we can
+    // make it.  We could index by fullBranch, but we can't index by callback
+    // or thisObject, as far as I know, since the keys to JavaScript hashes
+    // (a.k.a. objects) can apparently only be primitive values.
+    let [observer] = observers.filter(function(v) v.prefName   == fullPrefName &&
+                                                  v.callback   == callback &&
+                                                  v.thisObject == thisObject);
+
+    if (observer) {
+      Preferences._prefSvc.removeObserver(fullPrefName, observer);
+      observers.splice(observers.indexOf(observer), 1);
+    }
+  },
+
+  /**
    * Observe a pref branch.  The callback can be a function, a method
    * (when thisObject is provided), or any object that implements nsIObserver.
    * The pref branch can be any string and is appended to the root branch
@@ -212,15 +279,15 @@ Preferences.prototype = {
    *
    * @returns the wrapped observer
    */
-  observe: function(branch, callback, thisObject) {
-    let fullBranch = this._prefBranch + (branch || "");
-
-    let observer = new PrefObserver(fullBranch, callback, thisObject);
-    Preferences._prefSvc.addObserver(fullBranch, observer, true);
-    observers.push(observer);
-
-    return observer;
-  },
+  //observeAll: function(branch, callback, thisObject) {
+  //  let fullBranch = this._prefBranch + (branch || "");
+  //
+  //  let observer = new PrefBranchObserver(fullBranch, callback, thisObject);
+  //  Preferences._prefSvc.addObserver(fullBranch, observer, true);
+  //  observers.push(observer);
+  //
+  //  return observer;
+  //},
 
   /**
    * Stop observing a pref branch.  This method must be called with the same
@@ -237,23 +304,23 @@ Preferences.prototype = {
    * @param   thisObject  {Object}  [optional]
    *          the object being used as |this| when calling a Function callback
    */
-  ignore: function(branch, callback, thisObject) {
-    let fullBranch = this._prefBranch + (branch || "");
-
-    // This seems fairly inefficient, but I'm not sure how much better we can
-    // make it.  We could index by fullBranch, but we can't index by callback
-    // or thisObject, as far as I know, since the keys to JavaScript hashes
-    // (a.k.a. objects) can apparently only be primitive values.
-    let [observer] =
-      observers.filter(function(v) v.branch     == fullBranch &&
-                                   v.callback   == callback &&
-                                   v.thisObject == thisObject);
-
-    if (observer) {
-      Preferences._prefSvc.removeObserver(fullBranch, observer);
-      observers.splice(observers.indexOf(observer), 1);
-    }
-  },
+  //ignoreAll: function(branch, callback, thisObject) {
+  //  let fullBranch = this._prefBranch + (branch || "");
+  //
+  //  // This seems fairly inefficient, but I'm not sure how much better we can
+  //  // make it.  We could index by fullBranch, but we can't index by callback
+  //  // or thisObject, as far as I know, since the keys to JavaScript hashes
+  //  // (a.k.a. objects) can apparently only be primitive values.
+  //  let [observer] =
+  //    observers.filter(function(v) v.branch     == fullBranch &&
+  //                                 v.callback   == callback &&
+  //                                 v.thisObject == thisObject);
+  //
+  //  if (observer) {
+  //    Preferences._prefSvc.removeObserver(fullBranch, observer);
+  //    observers.splice(observers.indexOf(observer), 1);
+  //  }
+  //},
 
 
   // FIXME: make the methods below accept an array of pref names.
@@ -301,32 +368,61 @@ Preferences.prototype = {
 Preferences.__proto__ = Preferences.prototype;
 
 /**
- * A cache of preference observers.
+ * A cache of pref observers.
  *
- * We use this to remove observers when a caller calls |remove|.
+ * We use this to remove observers when a caller calls Preferences::ignore.
  *
- * All Preferences instances share this object, because we want callers
- * to be able to remove an observer using a different Preferences object
- * than the one with which they added it.  That means we have to provide
- * the observers in this object their complete pref branch, not just
- * the branch relative to the root branch of any given Preferences object.
+ * All Preferences instances share this object, because we want callers to be
+ * able to remove an observer using a different Preferences object than the one
+ * with which they added it.  That means we have to identify the observers
+ * in this object by their complete pref name, not just their name relative to
+ * the root branch of the Preferences object with which they were created.
  */
 let observers = [];
 
-function PrefObserver(branch, callback, thisObject) {
-  this.branch = branch;
+//function PrefBranchObserver(branch, callback, thisObject) {
+//  this.branch = branch;
+//  this.callback = callback;
+//  this.thisObject = thisObject;
+//}
+//
+//PrefBranchObserver.prototype = {
+//  QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsISupportsWeakReference]),
+//  observe: function(subject, topic, data) {
+//    if (typeof this.callback == "function") {
+//      if (this.thisObject)
+//        this.callback.call(this.thisObject);
+//      else
+//        this.callback();
+//    }
+//    else // typeof this.callback == "object" (nsIObserver)
+//      this.callback.observe(subject, topic, data);
+//  }
+//};
+
+function PrefObserver(prefName, callback, thisObject) {
+  this.prefName = prefName;
   this.callback = callback;
   this.thisObject = thisObject;
 }
 
 PrefObserver.prototype = {
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver, Ci.nsISupportsWeakReference]),
+
   observe: function(subject, topic, data) {
+    // The pref service only observes whole branches, but we only observe
+    // individual preferences, so we check here that the pref that changed
+    // is the exact one we're observing (and not some sub-pref on the branch).
+    if (data != this.prefName)
+      return;
+
     if (typeof this.callback == "function") {
+      let prefValue = Preferences.get(this.prefName);
+
       if (this.thisObject)
-        this.callback.call(this.thisObject);
+        this.callback.call(this.thisObject, prefValue);
       else
-        this.callback();
+        this.callback(prefValue);
     }
     else // typeof this.callback == "object" (nsIObserver)
       this.callback.observe(subject, topic, data);
