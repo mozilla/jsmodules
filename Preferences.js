@@ -225,8 +225,8 @@ Preferences.prototype = {
   /**
    * Stop observing a pref branch.  This method must be called with the same
    * branch, callback, and thisObject with which the observer was originally
-   * registered.  However, you don't have to call this method on the same
-   * exact instance of Preferences.  You can call it on any instance.
+   * registered.  However, you don't have to call this method on the same exact
+   * instance of Preferences; you can call it on any instance.
    *
    * @param   branch      {String}  [optional]
    *          the branch being observed
