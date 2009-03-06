@@ -136,13 +136,16 @@ Preferences.prototype = {
         break;
 
       case "Number":
-        this._prefSvc.setIntPref(prefName, prefValue);
+        // We throw if the number is outside the range, since the result
+        // will never be what the consumer wanted to store, but we only warn
+        // if the number is non-integer, since the consumer might not mind
+        // the loss of precision.
         if (prefValue > MAX_INT || prefValue < MIN_INT)
-          Cu.reportError("Warning: setting the " + prefName + " pref to the " +
-                         "large number " + prefValue + " corrupted it to the " +
-                         "smaller number " + this.get(prefName) + ", as it is " +
-                         "outside the 32-bit range -(2^31-1) to 2^31-1; " +
-                         "to retain the original value, store it as a string.");
+          throw("you cannot set the " + prefName + " pref to the number " +
+                prefValue + ", as number pref values must be in the signed " +
+                "32-bit integer range -(2^31-1) to 2^31-1.  To store numbers " +
+                "outside that range, store them as strings.");
+        this._prefSvc.setIntPref(prefName, prefValue);
         if (prefValue % 1 != 0)
           Cu.reportError("Warning: setting the " + prefName + " pref to the " +
                          "non-integer number " + prefValue + " converted it " +

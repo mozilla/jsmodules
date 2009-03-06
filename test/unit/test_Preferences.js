@@ -89,8 +89,12 @@ function test_set_get_number_pref() {
   do_check_eq(Preferences.get("test_set_get_number_pref"), 3);
 
   // Values outside the range -(2^31-1) to 2^31-1 overflow.
-  Preferences.set("test_set_get_number_pref", Math.pow(2, 31));
-  do_check_eq(Preferences.get("test_set_get_number_pref"), -(Math.pow(2, 31)));
+  try {
+    Preferences.set("test_set_get_number_pref", Math.pow(2, 31));
+    // We expect this to throw, so the test is designed to fail if it doesn't.
+    do_check_true(false);
+  }
+  catch(ex) {}
 
   // Clean up.
   Preferences.reset("test_set_get_number_pref");
