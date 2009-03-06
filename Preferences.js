@@ -59,8 +59,9 @@ function Preferences(prefBranch) {
 Preferences.prototype = {
   _prefBranch: "",
 
-  // Preferences Service
-
+  /**
+   * Preferences Service
+   */
   get _prefSvc() {
     let prefSvc = Cc["@mozilla.org/preferences-service;1"].
                   getService(Ci.nsIPrefService).
