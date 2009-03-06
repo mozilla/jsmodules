@@ -194,5 +194,28 @@ function test_observe_exact_pref() {
   do_check_false(observed);
 
   // Clean up.
+  Preferences.ignore("test_observe_exact_pref", observer);
   Preferences.reset("test_observe_exact_pref.sub-pref");
+}
+
+function test_observe_value_of_set_pref() {
+  let observer = function(newVal) { do_check_eq(newVal, "something") };
+
+  Preferences.observe("test_observe_value_of_set_pref", observer);
+  Preferences.set("test_observe_value_of_set_pref", "something");
+
+  // Clean up.
+  Preferences.ignore("test_observe_value_of_set_pref", observer);
+  Preferences.reset("test_observe_value_of_set_pref");
+}
+
+function test_observe_value_of_reset_pref() {
+  let observer = function(newVal) { do_check_true(typeof newVal == "undefined") };
+
+  Preferences.set("test_observe_value_of_reset_pref", "something");
+  Preferences.observe("test_observe_value_of_reset_pref", observer);
+  Preferences.reset("test_observe_value_of_reset_pref");
+
+  // Clean up.
+  Preferences.ignore("test_observe_value_of_reset_pref", observer);
 }
