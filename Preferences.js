@@ -44,6 +44,13 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
+// The minimum and maximum integers that can be set as preferences.
+// The range of valid values is narrower than the range of valid JS values
+// because the native preferences code treats integers as NSPR PRInt32s,
+// which are 32-bit signed integers on all platforms.
+const MAX_INT = Math.pow(2, 31) - 1;
+const MIN_INT = -MAX_INT;
+
 function Preferences(prefBranch) {
   if (prefBranch)
     this._prefBranch = prefBranch;
@@ -91,6 +98,22 @@ Preferences.prototype = {
     }
   },
 
+  /**
+   * Set a preference to a value.
+   *
+   * @param   prefName  {String}
+   *          the name of the pref to set
+   *
+   * @param   prefValue {String|Number|Boolean}
+   *          the value to which to set the pref
+   *
+   * Note: Preferences cannot store non-integer numbers or numbers outside
+   * the signed 32-bit range -(2^31-1) to 2^31-1, If you have such a number,
+   * store it as a string by calling toString() on the number before passing
+   * it to this method, i.e.:
+   *   Preferences.set("pi", 3.14159.toString())
+   *   Preferences.set("big", Math.pow(2, 31).toString()).
+   */
   set: function(prefName, prefValue) {
     if (isObject(prefName)) {
       for (let [name, value] in Iterator(prefName))
@@ -114,6 +137,12 @@ Preferences.prototype = {
 
       case "Number":
         this._prefSvc.setIntPref(prefName, prefValue);
+        if (prefValue > MAX_INT || prefValue < MIN_INT)
+          Cu.reportError("Warning: setting the " + prefName + " pref to the " +
+                         "large number " + prefValue + " corrupted it to the " +
+                         "smaller number " + this.get(prefName) + ", as it is " +
+                         "outside the 32-bit range -(2^31-1) to 2^31-1; " +
+                         "to retain the original value, store it as a string.");
         if (prefValue % 1 != 0)
           Cu.reportError("Warning: setting the " + prefName + " pref to the " +
                          "non-integer number " + prefValue + " converted it " +

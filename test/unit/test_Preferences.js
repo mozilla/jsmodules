@@ -80,6 +80,22 @@ function test_get_string_pref() {
   Preferences.reset("test_get_string_pref");
 }
 
+function test_set_get_number_pref() {
+  Preferences.set("test_set_get_number_pref", 5);
+  do_check_eq(Preferences.get("test_set_get_number_pref"), 5);
+
+  // Non-integer values get converted to integers.
+  Preferences.set("test_set_get_number_pref", 3.14159);
+  do_check_eq(Preferences.get("test_set_get_number_pref"), 3);
+
+  // Values outside the range -(2^31-1) to 2^31-1 overflow.
+  Preferences.set("test_set_get_number_pref", Math.pow(2, 31));
+  do_check_eq(Preferences.get("test_set_get_number_pref"), -(Math.pow(2, 31)));
+
+  // Clean up.
+  Preferences.reset("test_set_get_number_pref");
+}
+
 function test_reset_pref() {
   Preferences.set("test_reset_pref", 1);
   Preferences.reset("test_reset_pref");
