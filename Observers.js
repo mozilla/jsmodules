@@ -77,14 +77,14 @@ let Observers = {
   /**
    * Unregister the given callback as an observer of the given topic.
    *
-   * @param topic       {String}
-   *        the topic being observed
+   * @param   topic       {String}
+   *          the topic being observed
    *
-   * @param callback    {Object}
-   *        the callback doing the observing
+   * @param   callback    {Object}
+   *          the callback doing the observing
    *
-   * @param thisObject  {Object}  [optional]
-   *        the object being used as |this| when calling a Function callback
+   * @param   thisObject  {Object}  [optional]
+   *          the object being used as |this| when calling a Function callback
    */
   remove: function(topic, callback, thisObject) {
     // This seems fairly inefficient, but I'm not sure how much better
