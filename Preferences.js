@@ -156,12 +156,54 @@ Preferences.prototype = {
     }
   },
 
+  /**
+   * Whether or not the given pref has a value.  This is different from isSet
+   * because it returns true whether the value of the pref is a default value
+   * or a user-set value, while isSet only returns true if the value
+   * is a user-set value.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to check, or an array of prefs to check
+   *
+   * @returns {Boolean|Array}
+   *          whether or not the pref has a value; or, if the caller provided
+   *          an array of pref names, an array of booleans indicating whether
+   *          or not the prefs have values
+   */
   has: function(prefName) {
     if (isArray(prefName))
       return prefName.map(this.has, this);
 
     return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
   },
+
+  /**
+   * Whether or not the given pref has a user-set value.  This is different
+   * from |has| because it returns true only if the value of the pref is a user-
+   * set value, while |has| returns true if the value of the pref is a default
+   * value or a user-set value.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to check, or an array of prefs to check
+   *
+   * @returns {Boolean|Array}
+   *          whether or not the pref has a user-set value; or, if the caller
+   *          provided an array of pref names, an array of booleans indicating
+   *          whether or not the prefs have user-set values
+   */
+  isSet: function(prefName) {
+    if (isArray(prefName))
+      return prefName.map(this.isSet, this);
+
+    return (this.has(prefName) && this._prefSvc.prefHasUserValue(prefName));
+  },
+
+  /**
+   * Whether or not the given pref has a user-set value. Use isSet instead,
+   * which is equivalent.
+   * @deprecated
+   */
+  modified: function(prefName) { return this.isSet(prefName) },
 
   reset: function(prefName) {
     if (isArray(prefName)) {
@@ -268,11 +310,6 @@ Preferences.prototype = {
   },
 
   // FIXME: make the methods below accept an array of pref names.
-
-  // FIXME: change this to isSet (for consistency with set and reset).
-  modified: function(prefName) {
-    return (this.has(prefName) && this._prefSvc.prefHasUserValue(prefName));
-  },
 
   locked: function(prefName) {
     return this._prefSvc.isLocked(prefName);

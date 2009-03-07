@@ -237,3 +237,15 @@ function test_has_pref() {
   // Clean up.
   Preferences.resetBranch("test_has_pref");
 }
+
+function test_isSet_pref() {
+  // Use a pref that we know is set as a default pref.
+  // This feels dangerous; perhaps we should create some other default prefs
+  // that we can use for testing.
+  do_check_false(Preferences.isSet("toolkit.defaultChromeURI"));
+  Preferences.set("toolkit.defaultChromeURI", "foo");
+  do_check_true(Preferences.isSet("toolkit.defaultChromeURI"));
+
+  // Clean up.
+  Preferences.reset("toolkit.defaultChromeURI");
+}
