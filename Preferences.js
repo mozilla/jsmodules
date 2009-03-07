@@ -253,6 +253,19 @@ Preferences.prototype = {
     }
   },
 
+  resetBranch: function(prefBranch) {
+    try {
+      this._prefSvc.resetBranch(prefBranch);
+    }
+    catch(ex) {
+      // The current implementation of nsIPrefBranch in Mozilla
+      // doesn't implement resetBranch, so we do it ourselves.
+      if (ex.result == Cr.NS_ERROR_NOT_IMPLEMENTED)
+        this.reset(this._prefSvc.getChildList(prefBranch, []));
+      else
+        throw ex;
+    }
+  },
 
   // FIXME: make the methods below accept an array of pref names.
 
@@ -271,20 +284,6 @@ Preferences.prototype = {
 
   unlock: function(prefName) {
     this._prefSvc.unlockPref(prefName);
-  },
-
-  resetBranch: function(prefBranch) {
-    try {
-      this._prefSvc.resetBranch(prefBranch);
-    }
-    catch(ex) {
-      // The current implementation of nsIPrefBranch in Mozilla
-      // doesn't implement resetBranch, so we do it ourselves.
-      if (ex.result == Cr.NS_ERROR_NOT_IMPLEMENTED)
-        this.reset(this._prefSvc.getChildList(prefBranch, []));
-      else
-        throw ex;
-    }
   },
 
   /**
