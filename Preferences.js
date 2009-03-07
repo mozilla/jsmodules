@@ -57,20 +57,6 @@ function Preferences(prefBranch) {
 }
 
 Preferences.prototype = {
-  _prefBranch: "",
-
-  /**
-   * Preferences Service
-   */
-  get _prefSvc() {
-    let prefSvc = Cc["@mozilla.org/preferences-service;1"].
-                  getService(Ci.nsIPrefService).
-                  getBranch(this._prefBranch).
-                  QueryInterface(Ci.nsIPrefBranch2);
-    this.__defineGetter__("_prefSvc", function() prefSvc);
-    return this._prefSvc;
-  },
-
   /**
     * Get the value of a pref, if any; otherwise return the default value.
     *
@@ -296,6 +282,25 @@ Preferences.prototype = {
       else
         throw ex;
     }
+  },
+
+  /**
+   * The branch of the preferences tree to which this instance provides access.
+   * @private
+   */
+  _prefBranch: "",
+
+  /**
+   * Preferences Service
+   * @private
+   */
+  get _prefSvc() {
+    let prefSvc = Cc["@mozilla.org/preferences-service;1"].
+                  getService(Ci.nsIPrefService).
+                  getBranch(this._prefBranch).
+                  QueryInterface(Ci.nsIPrefBranch2);
+    this.__defineGetter__("_prefSvc", function() prefSvc);
+    return this._prefSvc;
   }
 
 };
