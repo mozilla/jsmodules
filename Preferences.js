@@ -227,6 +227,49 @@ Preferences.prototype = {
     }
   },
 
+  /**
+   * Lock a pref so it can't be changed.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to lock, or an array of prefs to lock
+   */
+  lock: function(prefName) {
+    if (isArray(prefName))
+      prefName.map(this.lock, this);
+
+    this._prefSvc.lockPref(prefName);
+  },
+
+  /**
+   * Unlock a pref so it can be changed.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to lock, or an array of prefs to lock
+   */
+  unlock: function(prefName) {
+    if (isArray(prefName))
+      prefName.map(this.unlock, this);
+
+    this._prefSvc.unlockPref(prefName);
+  },
+
+  /**
+   * Whether or not the given pref is locked against changes.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to check, or an array of prefs to check
+   *
+   * @returns {Boolean|Array}
+   *          whether or not the pref has a user-set value; or, if the caller
+   *          provided an array of pref names, an array of booleans indicating
+   *          whether or not the prefs have user-set values
+   */
+  locked: function(prefName) {
+    if (isArray(prefName))
+      return prefName.map(this.locked, this);
+
+    return this._prefSvc.prefIsLocked(prefName);
+  },
 
   /**
    * Start observing a pref.
@@ -307,20 +350,6 @@ Preferences.prototype = {
       else
         throw ex;
     }
-  },
-
-  // FIXME: make the methods below accept an array of pref names.
-
-  locked: function(prefName) {
-    return this._prefSvc.isLocked(prefName);
-  },
-
-  lock: function(prefName) {
-    this._prefSvc.lockPref(prefName);
-  },
-
-  unlock: function(prefName) {
-    this._prefSvc.unlockPref(prefName);
   },
 
   /**

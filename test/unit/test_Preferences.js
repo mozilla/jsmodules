@@ -239,12 +239,34 @@ function test_has_pref() {
 }
 
 function test_isSet_pref() {
-  // Use a pref that we know is set as a default pref.
+  // Use a pref that we know has a default value but no user-set value.
   // This feels dangerous; perhaps we should create some other default prefs
   // that we can use for testing.
   do_check_false(Preferences.isSet("toolkit.defaultChromeURI"));
   Preferences.set("toolkit.defaultChromeURI", "foo");
   do_check_true(Preferences.isSet("toolkit.defaultChromeURI"));
+
+  // Clean up.
+  Preferences.reset("toolkit.defaultChromeURI");
+}
+
+function test_lock_prefs() {
+  // Use a pref that we know has a default value.
+  // This feels dangerous; perhaps we should create some other default prefs
+  // that we can use for testing.
+  do_check_false(Preferences.locked("toolkit.defaultChromeURI"));
+  Preferences.lock("toolkit.defaultChromeURI");
+  do_check_true(Preferences.locked("toolkit.defaultChromeURI"));
+  Preferences.unlock("toolkit.defaultChromeURI");
+  do_check_false(Preferences.locked("toolkit.defaultChromeURI"));
+
+  let val = Preferences.get("toolkit.defaultChromeURI");
+  Preferences.set("toolkit.defaultChromeURI", "test_lock_prefs");
+  do_check_eq(Preferences.get("toolkit.defaultChromeURI"), "test_lock_prefs");
+  Preferences.lock("toolkit.defaultChromeURI");
+  do_check_eq(Preferences.get("toolkit.defaultChromeURI"), val);
+  Preferences.unlock("toolkit.defaultChromeURI");
+  do_check_eq(Preferences.get("toolkit.defaultChromeURI"), "test_lock_prefs");
 
   // Clean up.
   Preferences.reset("toolkit.defaultChromeURI");
