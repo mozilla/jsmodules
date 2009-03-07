@@ -96,8 +96,14 @@ Preferences.prototype = {
   /**
    * Set a preference to a value.
    *
-   * @param   prefName  {String}
-   *          the name of the pref to set
+   * You can set multiple prefs by passing an object as the only parameter.
+   * In that case, this method will treat the properties of the object
+   * as preferences to set, where each property name is the name of a pref
+   * and its corresponding property value is the value of the pref.
+   *
+   * @param   prefName  {String|Object}
+   *          the name of the pref to set; or an object containing a set
+   *          of prefs to set
    *
    * @param   prefValue {String|Number|Boolean}
    *          the value to which to set the pref
