@@ -156,6 +156,13 @@ Preferences.prototype = {
     }
   },
 
+  has: function(prefName) {
+    if (isArray(prefName))
+      return prefName.map(this.has, this);
+
+    return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
+  },
+
   reset: function(prefName) {
     if (isArray(prefName)) {
       prefName.map(function(v) this.reset(v), this);
@@ -248,10 +255,6 @@ Preferences.prototype = {
 
 
   // FIXME: make the methods below accept an array of pref names.
-
-  has: function(prefName) {
-    return (this._prefSvc.getPrefType(prefName) != Ci.nsIPrefBranch.PREF_INVALID);
-  },
 
   // FIXME: change this to isSet (for consistency with set and reset).
   modified: function(prefName) {

@@ -219,3 +219,21 @@ function test_observe_value_of_reset_pref() {
   // Clean up.
   Preferences.ignore("test_observe_value_of_reset_pref", observer);
 }
+
+function test_has_pref() {
+  do_check_false(Preferences.has("test_has_pref"));
+  Preferences.set("test_has_pref", "foo");
+  do_check_true(Preferences.has("test_has_pref"));
+
+  Preferences.set("test_has_pref.foo", "foo");
+  Preferences.set("test_has_pref.bar", "bar");
+  let [hasFoo, hasBar, hasBaz] = Preferences.has(["test_has_pref.foo",
+                                                  "test_has_pref.bar",
+                                                  "test_has_pref.baz"]);
+  do_check_true(hasFoo);
+  do_check_true(hasBar);
+  do_check_false(hasBaz);
+
+  // Clean up.
+  Preferences.resetBranch("test_has_pref");
+}
