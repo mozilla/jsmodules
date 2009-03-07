@@ -58,16 +58,19 @@ function Preferences(prefBranch) {
 
 Preferences.prototype = {
   /**
-    * Get the value of a pref, if any; otherwise return the default value.
-    *
-    * @param   prefName      the name of the pref to get
-    * @param   defaultValue  the default value, if any
-    *
-    * @returns the value of the pref, if any; otherwise the default value
-    */
+   * Get the value of a pref, if any; otherwise return the default value.
+   *
+   * @param   prefName  {String|Array}
+   *          the pref to get, or an array of prefs to get
+   *
+   * @param   defaultValue
+   *          the default value, if any, for prefs that don't have one
+   *
+   * @returns the value of the pref, if any; otherwise the default value
+   */
   get: function(prefName, defaultValue) {
     if (isArray(prefName))
-      return prefName.map(function(v) this.get(v), this);
+      return prefName.map(function(v) this.get(v, defaultValue), this);
 
     switch (this._prefSvc.getPrefType(prefName)) {
       case Ci.nsIPrefBranch.PREF_STRING:

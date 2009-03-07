@@ -31,6 +31,23 @@ function test_set_get_multiple_prefs() {
   Preferences.resetBranch("test_set_get_multiple_prefs.");
 }
 
+function test_get_multiple_prefs_with_default_value() {
+  Preferences.set({ "test_get_multiple_prefs_with_default_value.a":  1,
+                    "test_get_multiple_prefs_with_default_value.b":  2 });
+
+  let [a, b, c] = Preferences.get(["test_get_multiple_prefs_with_default_value.a",
+                                   "test_get_multiple_prefs_with_default_value.b",
+                                   "test_get_multiple_prefs_with_default_value.c"],
+                                  0);
+
+  do_check_eq(a, 1);
+  do_check_eq(b, 2);
+  do_check_eq(c, 0);
+
+  // Clean up.
+  Preferences.resetBranch("test_get_multiple_prefs_with_default_value.");
+}
+
 function test_set_get_unicode_pref() {
   Preferences.set("test_set_get_unicode_pref", String.fromCharCode(960));
   do_check_eq(Preferences.get("test_set_get_unicode_pref"), String.fromCharCode(960));
