@@ -46,7 +46,7 @@
  *   let MyExtension = {
  *     JSON: null,
  *     ...
- *   }
+ *   };
  *   Components.utils.import("chrome://myextension/modules/JSON.js", MyExtension);
  *   // Now MyExtension.JSON is an object implementing the Firefox 3.5 JSON API.
  *
