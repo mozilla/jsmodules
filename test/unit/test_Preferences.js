@@ -14,6 +14,17 @@ function test_set_get_pref() {
   Preferences.resetBranch("test_set_get_pref.");
 }
 
+function test_set_get_branch_pref() {
+  let prefs = new Preferences("test_set_get_branch_pref.");
+
+  prefs.set("something", 1);
+  do_check_eq(prefs.get("something"), 1);
+  do_check_false(Preferences.has("something"));
+
+  // Clean up.
+  prefs.reset("something");
+}
+
 function test_set_get_multiple_prefs() {
   Preferences.set({ "test_set_get_multiple_prefs.integer":  1,
                     "test_set_get_multiple_prefs.string":   "foo",
@@ -287,4 +298,29 @@ function test_lock_prefs() {
 
   // Clean up.
   Preferences.reset("toolkit.defaultChromeURI");
+}
+
+function test_site_prefs() {
+  let prefs = Preferences.site("www.example.com");
+
+  prefs.set("test_site_prefs.integer", 1);
+  do_check_eq(prefs.get("test_site_prefs.integer"), 1);
+  do_check_true(prefs.has("test_site_prefs.integer"));
+  do_check_false(Preferences.has("test_site_prefs.integer"));
+  prefs.reset("test_site_prefs.integer");
+  do_check_false(prefs.has("test_site_prefs.integer"));
+
+  prefs.set("test_site_prefs.string", "foo");
+  do_check_eq(prefs.get("test_site_prefs.string"), "foo");
+  do_check_true(prefs.has("test_site_prefs.string"));
+  do_check_false(Preferences.has("test_site_prefs.string"));
+  prefs.reset("test_site_prefs.string");
+  do_check_false(prefs.has("test_site_prefs.string"));
+
+  prefs.set("test_site_prefs.boolean", true);
+  do_check_eq(prefs.get("test_site_prefs.boolean"), true);
+  do_check_true(prefs.has("test_site_prefs.boolean"));
+  do_check_false(Preferences.has("test_site_prefs.boolean"));
+  prefs.reset("test_site_prefs.boolean");
+  do_check_false(prefs.has("test_site_prefs.boolean"));
 }
