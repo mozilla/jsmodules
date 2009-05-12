@@ -51,24 +51,24 @@ let EXPORTED_SYMBOLS = ["Mixins"];
  * @param   target  {Object}  the object that receives attributes
  */
 function mixin(source, target) {
-  for (let attr in source) {
+  for (let attribute in source) {
     // Don't mix in attributes that already exist in the target.
-    if (attr in target)
+    if (attribute in target)
       continue;
 
-    let getter = source.__lookupGetter__(attr);
-    let setter = source.__lookupSetter__(attr);
+    let getter = source.__lookupGetter__(attribute);
+    let setter = source.__lookupSetter__(attribute);
 
     // We can have a getter, a setter, or both.  If we have either, we only
     // define one or both of them.  Otherwise, we assign the property directly.
     if (getter || setter) {
       if (getter)
-        target.__defineGetter__(attr, getter);
+        target.__defineGetter__(attribute, getter);
       if (setter)
-        target.__defineSetter__(attr, setter);
+        target.__defineSetter__(attribute, setter);
     }
     else
-       target[attr] = source[attr];
+       target[attribute] = source[attribute];
   }
 }
 
