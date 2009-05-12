@@ -59,6 +59,8 @@ function mixin(source, target) {
     let getter = source.__lookupGetter__(attr);
     let setter = source.__lookupSetter__(attr);
 
+    // We can have a getter, a setter, or both.  If we have either, we only
+    // define one or both of them.  Otherwise, we assign the property directly.
     if (getter || setter) {
       if (getter)
         target.__defineGetter__(attr, getter);
