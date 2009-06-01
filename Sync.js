@@ -43,24 +43,24 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
-function sync(/*, arg1, arg2, ... */) {
-  /* Grab the current thread so we can make it give up priority */
-  var thread = Cc["@mozilla.org/thread-manager;1"].getService().currentThread;
+function sync(/* arg1, arg2, ... */) {
+  // Grab the current thread so we can make it give up priority
+  let thread = Cc["@mozilla.org/thread-manager;1"].getService().currentThread;
 
-  /* Call the function with our callback and the original args */
-  var retval;
+  // Call the function with our callback and the original args
+  let retval;
   this.apply(null, [function(data) {
     retval = data;
 
-    /* Signal that we got the return value */
+    // Signal that we got the return value
     thread = null;
   }].concat(Array.slice(arguments)));
 
-  /* Keep waiting until our callback is triggered */
+  // Keep waiting until our callback is triggered
   while (thread != null)
     thread.processNextEvent(true);
 
-  /* Return the value passed to the callback */
+  // Return the value passed to the callback
   return retval;
 }
 
@@ -99,7 +99,7 @@ let Sync = {
    * Call an asynchronous function as if it were synchronous, not returning
    * until the asynchronous function completes (but without halting the thread
    * in the meantime).  Attach this to the Function prototype.
-   * 
+   *
    *   Function.prototype.sync = Sync.sync;
    *
    * FIXME: insert usage example here.
