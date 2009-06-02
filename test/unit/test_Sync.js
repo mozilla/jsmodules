@@ -1,6 +1,5 @@
 Components.utils.import("resource://jsmodules/Sync.js");
-
-Function.prototype.sync = Sync.sync;
+Sync(Function);
 
 // Test the built-in Sync.sleep method.
 function test_Sync_sleep() {
