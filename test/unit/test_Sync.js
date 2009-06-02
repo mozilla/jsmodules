@@ -13,6 +13,12 @@ function slowAdd(onComplete, wait, num1, num2) {
   setTimeout(function() onComplete(num1 + num2), wait);
 }
 
+function slowThisGet(onComplete, wait, prop) {
+  // NB: this[prop] could be different if accessed after waiting
+  let ret = this[prop];
+  setTimeout(function() onComplete(ret), wait);
+}
+
 // Test the built-in Sync.sleep method.
 function test_Sync_sleep() {
   let duration = time(function() {
@@ -35,6 +41,15 @@ function test_Sync_sync() {
   let duration = time(function() {
     let sum = Sync.sync(slowAdd)(100, -123, 123);
     do_check_eq(sum, 0);
+  });
+  do_check_true(duration >= 100);
+}
+
+// Check that the non-Function.prototype version of syncBind works
+function test_Sync_sync_bind() {
+  let duration = time(function() {
+    let val = Sync.sync(slowThisGet, { foo: "bar" })(100, "foo");
+    do_check_eq(val, "bar");
   });
   do_check_true(duration >= 100);
 }
