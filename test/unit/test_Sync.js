@@ -63,6 +63,16 @@ function test_Sync_sync_bind() {
   do_check_true(duration >= 100);
 }
 
+// Check that sync. function callbacks can be extracted
+function test_Function_prototype_sync_onComplete() {
+  let add = slowAdd.sync;
+  let duration = time(function() {
+    let sum = add(add.onComplete, 100, 1000, 234);
+    do_check_eq(sum, 1234);
+  });
+  do_check_true(duration >= 100);
+}
+
 // Make sure the exported Sync object/function has Function properties
 function test_function_Sync() {
   // We can't check the functions directly because the Function object for Sync

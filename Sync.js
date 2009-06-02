@@ -92,6 +92,13 @@ function syncBind(thisArg) {
     return retval;
   };
 
+  // Grabbing the onComplete converts the sync. function to not assume the first
+  // argument is our custom callback
+  syncFunc.__defineGetter__("onComplete", function() {
+    insertCallback = false;
+    return onComplete;
+  });
+
   return syncFunc;
 }
 
