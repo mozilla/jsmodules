@@ -45,6 +45,15 @@ function test_Sync_sync() {
   do_check_true(duration >= 100);
 }
 
+// Check that the Function.prototype version of syncBind works
+function test_Function_prototype_syncBind() {
+  let duration = time(function() {
+    let val = slowThisGet.syncBind({ five: 5 })(100, "five");
+    do_check_eq(val, 5);
+  });
+  do_check_true(duration >= 100);
+}
+
 // Check that the non-Function.prototype version of syncBind works
 function test_Sync_sync_bind() {
   let duration = time(function() {

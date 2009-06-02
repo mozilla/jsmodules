@@ -133,6 +133,11 @@ let Sync = function Sync(Function) {
   // @usage let ret = ignoreThisFunc.sync(arg1, arg2);
   // @usage let func = ignoreThisFunc.sync; let ret = func(arg1, arg2);
   Function.prototype.__defineGetter__("sync", syncBind);
+
+  // Allow binding of an arbitrary thisArg for the synchronous function
+  // @usage let ret = obj.asyncFunc.syncBind(obj)(arg1, arg2);
+  // @usage let func = obj.asyncFunc.syncBind(obj); let ret = func(arg1, arg2);
+  Function.prototype.syncBind = syncBind;
 };
 
 /**
