@@ -1,12 +1,19 @@
 Components.utils.import("resource://jsmodules/Sync.js");
 Sync(Function);
 
+// Helper function to check how long a function takes to run
+function time(func) {
+  let startTime = new Date();
+  func();
+  return new Date() - startTime;
+}
+
 // Test the built-in Sync.sleep method.
 function test_Sync_sleep() {
-  let startTime = new Date();
-  Sync.sleep(100);
-  let endTime = new Date();
-  do_check_true(endTime - startTime >= 100);
+  let duration = time(function() {
+    Sync.sleep(100);
+  });
+  do_check_true(duration >= 100);
 }
 
 function test_Function_prototype_sync() {
@@ -17,10 +24,10 @@ function test_Function_prototype_sync() {
     setTimeout(callback, milliseconds);
   }
 
-  let startTime = new Date();
-  sleep.sync(100);
-  let endTime = new Date();
-  do_check_true(endTime - startTime >= 100);
+  let duration = time(function() {
+    sleep.sync(100);
+  });
+  do_check_true(duration >= 100);
 }
 
 // Make sure the exported Sync object/function has Function properties
