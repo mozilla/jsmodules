@@ -138,23 +138,22 @@ let Sync = function Sync(Function) {
 // Make functions in this module be sync-able
 Sync(Function);
 
-// Change Sync into an Object from a Function, so it loses things like apply and
-// call, but it'll gain all the named properties below.
-Sync.__proto__ = {
-  /**
-   * Sleep the specified number of milliseconds, pausing execution of the caller
-   * without halting the current thread.
-   * For example, the following code pauses 1000ms between dumps:
-   *
-   *   dump("Wait for it...\n");
-   *   Sync.sleep(1000);
-   *   dump("Wait for it...\n");
-   *   Sync.sleep(1000);
-   *   dump("What are you waiting for?!\n");
-   *
-   * @param milliseconds {Number} the number of milliseconds to sleep
-   */
-  sleep: function Sync_sleep(milliseconds) {
-    sleep.sync(milliseconds);
-  }
+// Add additional properties to export with the Sync function/object
+
+/**
+ * Sleep the specified number of milliseconds, pausing execution of the caller
+ * without halting the current thread.
+ * For example, the following code pauses 1000ms between dumps:
+ *
+ *   dump("Wait for it...\n");
+ *   Sync.sleep(1000);
+ *   dump("Wait for it...\n");
+ *   Sync.sleep(1000);
+ *   dump("What are you waiting for?!\n");
+ *
+ * @param milliseconds {Number}
+ *        The number of milliseconds to sleep
+ */
+Sync.sleep = function Sync_sleep(milliseconds) {
+  sleep.sync(milliseconds);
 };
