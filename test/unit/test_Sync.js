@@ -8,6 +8,11 @@ function time(func) {
   return new Date() - startTime;
 }
 
+// Helper function to test sync functionality
+function slowAdd(onComplete, wait, num1, num2) {
+  setTimeout(function() onComplete(num1 + num2), wait);
+}
+
 // Test the built-in Sync.sleep method.
 function test_Sync_sleep() {
   let duration = time(function() {
@@ -16,16 +21,20 @@ function test_Sync_sleep() {
   do_check_true(duration >= 100);
 }
 
+// Check that the Function.prototype version of sync works
 function test_Function_prototype_sync() {
-  // Test using the Sync.sync method that was added to the Function prototype
-  // to define our own sleep method.
-
-  function sleep(callback, milliseconds) {
-    setTimeout(callback, milliseconds);
-  }
-
   let duration = time(function() {
-    sleep.sync(100);
+    let sum = slowAdd.sync(100, 1, 10);
+    do_check_eq(sum, 11);
+  });
+  do_check_true(duration >= 100);
+}
+
+// Check that the non-Function.prototype version of sync works
+function test_Sync_sync() {
+  let duration = time(function() {
+    let sum = Sync.sync(slowAdd)(100, -123, 123);
+    do_check_eq(sum, 0);
   });
   do_check_true(duration >= 100);
 }

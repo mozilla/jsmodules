@@ -49,7 +49,7 @@ const Cu = Components.utils;
  *
  * @param this {Function}
  *        The asynchronous function to make a synchronous function
- * @param thisArg {Object}
+ * @param thisArg {Object} [optional]
  *        The object that the function accesses with "this"
  * @usage let syncFunc = syncBind.call(asyncFunc, thisArg);
  */
@@ -135,10 +135,20 @@ let Sync = function Sync(Function) {
   Function.prototype.__defineGetter__("sync", syncBind);
 };
 
-// Make functions in this module be sync-able
-Sync(Function);
+/**
+ * Make a synchronous version of the provided function, optionally binding a
+ * "this" for the sync function.
+ *
+ * @param func {Function}
+ *        Async function that takes an onComplete callback as its first arg
+ * @param thisArg {Object} [optional]
+ *        The object that the function accesses with "this"
+ * @usage let ret = Sync.sync(ignoreThisFunc)(arg1, arg2);
+ */
+Sync.sync = function Sync_sync(func, thisArg) syncBind.call(func, thisArg);
 
-// Add additional properties to export with the Sync function/object
+// Make functions in this module be sync-able (Sync.sync does something else)
+Sync(Function);
 
 /**
  * Sleep the specified number of milliseconds, pausing execution of the caller
