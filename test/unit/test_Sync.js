@@ -73,6 +73,25 @@ function test_Function_prototype_sync_onComplete() {
   do_check_true(duration >= 100);
 }
 
+// Test sync of async function that indirectly takes the callback
+function test_Function_prototype_sync_onComplete_indirect() {
+  let square = (function(obj) {
+    setTimeout(function() obj.done(obj.num * obj.num), obj.wait);
+  }).sync;
+
+  let thing = {
+    done: square.onComplete,
+    num: 3,
+    wait: 100
+  };
+
+  let duration = time(function() {
+    let val = square(thing);
+    do_check_eq(val, 9);
+  });
+  do_check_true(duration >= 100);
+}
+
 // Make sure the exported Sync object/function has Function properties
 function test_function_Sync() {
   // We can't check the functions directly because the Function object for Sync
