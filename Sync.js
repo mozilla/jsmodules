@@ -154,6 +154,4 @@ Sync(Function);
  * @param milliseconds {Number}
  *        The number of milliseconds to sleep
  */
-Sync.sleep = function Sync_sleep(milliseconds) {
-  sleep.sync(milliseconds);
-};
+Sync.sleep = sleep.sync;
