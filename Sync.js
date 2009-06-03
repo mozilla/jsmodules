@@ -43,6 +43,10 @@ const Ci = Components.interfaces;
 const Cr = Components.results;
 const Cu = Components.utils;
 
+// Define some constants to specify various sync. callback states
+const CB_READY = {};
+const CB_COMPLETE = {};
+
 /**
  * Make a synchronous version of the function object that will be called with
  * the provided thisArg.
@@ -56,46 +60,62 @@ const Cu = Components.utils;
  * @usage let sync = Sync(async); let ret = sync(arg1, arg2);
  */
 function Sync(func, thisArg) {
-  // Hold the value passed in from the callback to return
-  let retval;
+  // Create a callback that remembers its state
+  let makeCallback = function Sync_makeCallback() {
+    // The main callback remembers the value it's passed and that it got data
+    let onComplete = function Sync_onComplete(data) {
+      onComplete.value = data;
+      onComplete.state = CB_COMPLETE;
+    };
 
-  // Track if the onComplete has been called
-  let gotComplete = false;
-  let onComplete = function(data) {
-    retval = data;
-    gotComplete = true;
+    // Initialize the callback to wait to be called
+    onComplete.state = CB_READY;
+
+    return onComplete;
   };
 
-  // Determine if the custom callback should be passed in as the first arg
-  let insertCallback = true;
+  // If the sync. function callback is extracted, remember what it is
+  let extractedCallback;
 
-  let syncFunc = function(/* arg1, arg2, ... */) {
+  let syncFunc = function Sync_syncFunc(/* arg1, arg2, ... */) {
     // Grab the current thread so we can make it give up priority
     let thread = Cc["@mozilla.org/thread-manager;1"].getService().currentThread;
 
     // Save the original arguments into an array
     let args = Array.slice(arguments);
 
-    // Inject our custom callback as the first argument for the async function
-    if (insertCallback)
-      args.unshift(onComplete);
+    // Track the callback used for this sync. invocation instance
+    let instanceCallback = extractedCallback;
+
+    // We need to add a callback if it wasn't extracted out beforehand
+    if (instanceCallback == null) {
+      // Create a new callback for this invocation instance and pass it in
+      instanceCallback = makeCallback();
+      args.unshift(instanceCallback);
+    }
 
     // Call the async function bound to thisArg with the passed args
     func.apply(thisArg, args);
 
     // Keep waiting until our callback is triggered
-    while (!gotComplete)
+    while (instanceCallback.state == CB_READY)
       thread.processNextEvent(true);
 
+    // Reset the state of the callback to prepare for another call
+    instanceCallback.state = CB_READY;
+
     // Return the value passed to the callback
-    return retval;
+    return instanceCallback.value;
   };
 
   // Grabbing the onComplete converts the sync. function to not assume the first
   // argument is our custom callback
   syncFunc.__defineGetter__("onComplete", function() {
-    insertCallback = false;
-    return onComplete;
+    // Only allow one callback to be made, so delete the getter immediately
+    delete syncFunc.onComplete;
+
+    // Remember the one callback made as a property and locally
+    return syncFunc.onComplete = extractedCallback = makeCallback();
   });
 
   return syncFunc;

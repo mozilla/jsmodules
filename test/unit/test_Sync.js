@@ -31,6 +31,19 @@ function test_Sync_sleep() {
   }, 100);
 }
 
+// Make sure Sync.sleep can be called more than once
+function test_Sync_multiple() {
+  checkTime(function() {
+    Sync.sleep(100);
+    checkTime(function() {
+      Sync.sleep(100);
+      checkTime(function() {
+        Sync.sleep(100);
+      }, 100);
+    }, 200);
+  }, 300);
+}
+
 // Check that we can create a sync. function
 function test_Sync() {
   checkTime(function() {
