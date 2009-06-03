@@ -47,16 +47,15 @@ const Cu = Components.utils;
  * Make a synchronous version of the function object that will be called with
  * the provided thisArg.
  *
- * @param this {Function}
+ * @param func {Function}
  *        The asynchronous function to make a synchronous function
  * @param thisArg {Object} [optional]
  *        The object that the function accesses with "this"
- * @usage let syncFunc = syncBind.call(asyncFunc, thisArg);
+ * @usage let ret = Sync(asyncFunc, obj)(arg1, arg2);
+ * @usage let ret = Sync(ignoreThisFunc)(arg1, arg2);
+ * @usage let sync = Sync(async); let ret = sync(arg1, arg2);
  */
-function syncBind(thisArg) {
-  // Save for which function we're creating a sync version
-  let func = this;
-
+function Sync(func, thisArg) {
   // Hold the value passed in from the callback to return
   let retval;
 
@@ -131,38 +130,6 @@ function sleep(callback, milliseconds) {
 }
 
 /**
- * Prepare the Function object to make synchronous functions
- *
- * @usage Cu.import(".../Sync.js"); Sync(Function);
- */
-let Sync = function Sync(Function) {
-  // Basic case with undefined/global for thisArg for the synchronous function
-  // @usage let ret = ignoreThisFunc.sync(arg1, arg2);
-  // @usage let func = ignoreThisFunc.sync; let ret = func(arg1, arg2);
-  Function.prototype.__defineGetter__("sync", syncBind);
-
-  // Allow binding of an arbitrary thisArg for the synchronous function
-  // @usage let ret = obj.asyncFunc.syncBind(obj)(arg1, arg2);
-  // @usage let func = obj.asyncFunc.syncBind(obj); let ret = func(arg1, arg2);
-  Function.prototype.syncBind = syncBind;
-};
-
-/**
- * Make a synchronous version of the provided function, optionally binding a
- * "this" for the sync function.
- *
- * @param func {Function}
- *        Async function that takes an onComplete callback as its first arg
- * @param thisArg {Object} [optional]
- *        The object that the function accesses with "this"
- * @usage let ret = Sync.sync(ignoreThisFunc)(arg1, arg2);
- */
-Sync.sync = function Sync_sync(func, thisArg) syncBind.call(func, thisArg);
-
-// Make functions in this module be sync-able (Sync.sync does something else)
-Sync(Function);
-
-/**
  * Sleep the specified number of milliseconds, pausing execution of the caller
  * without halting the current thread.
  * For example, the following code pauses 1000ms between dumps:
@@ -176,4 +143,4 @@ Sync(Function);
  * @param milliseconds {Number}
  *        The number of milliseconds to sleep
  */
-Sync.sleep = sleep.sync;
+Sync.sleep = Sync(sleep);

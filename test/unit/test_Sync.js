@@ -1,5 +1,4 @@
 Components.utils.import("resource://jsmodules/Sync.js");
-Sync(Function);
 
 // Helper function to check how long a function takes to run
 function time(func) {
@@ -27,45 +26,27 @@ function test_Sync_sleep() {
   do_check_true(duration >= 100);
 }
 
-// Check that the Function.prototype version of sync works
-function test_Function_prototype_sync() {
+// Check that we can create a sync. function
+function test_Sync() {
   let duration = time(function() {
-    let sum = slowAdd.sync(100, 1, 10);
+    let sum = Sync(slowAdd)(100, 1, 10);
     do_check_eq(sum, 11);
   });
   do_check_true(duration >= 100);
 }
 
-// Check that the non-Function.prototype version of sync works
-function test_Sync_sync() {
+// Check that we can create a sync. function that gets "this" set
+function test_Sync_this() {
   let duration = time(function() {
-    let sum = Sync.sync(slowAdd)(100, -123, 123);
-    do_check_eq(sum, 0);
-  });
-  do_check_true(duration >= 100);
-}
-
-// Check that the Function.prototype version of syncBind works
-function test_Function_prototype_syncBind() {
-  let duration = time(function() {
-    let val = slowThisGet.syncBind({ five: 5 })(100, "five");
+    let val = Sync(slowThisGet, { five: 5 })(100, "five");
     do_check_eq(val, 5);
   });
   do_check_true(duration >= 100);
 }
 
-// Check that the non-Function.prototype version of syncBind works
-function test_Sync_sync_bind() {
-  let duration = time(function() {
-    let val = Sync.sync(slowThisGet, { foo: "bar" })(100, "foo");
-    do_check_eq(val, "bar");
-  });
-  do_check_true(duration >= 100);
-}
-
 // Check that sync. function callbacks can be extracted
-function test_Function_prototype_sync_onComplete() {
-  let add = slowAdd.sync;
+function test_Sync_onComplete() {
+  let add = Sync(slowAdd);
   let duration = time(function() {
     let sum = add(add.onComplete, 100, 1000, 234);
     do_check_eq(sum, 1234);
@@ -74,10 +55,10 @@ function test_Function_prototype_sync_onComplete() {
 }
 
 // Test sync of async function that indirectly takes the callback
-function test_Function_prototype_sync_onComplete_indirect() {
-  let square = (function(obj) {
+function test_Sync_onComplete_indirect() {
+  let square = Sync(function(obj) {
     setTimeout(function() obj.done(obj.num * obj.num), obj.wait);
-  }).sync;
+  });
 
   let thing = {
     done: square.onComplete,
