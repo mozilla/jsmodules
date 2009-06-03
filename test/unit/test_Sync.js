@@ -87,6 +87,27 @@ function test_Sync_onComplete_indirect() {
   }, 100);
 }
 
+// Test sync of async function that takes no args
+function test_Sync_onComplete_noargs() {
+  let done;
+  let makePi = Sync(function() {
+    // Find PI by starting at 0.04 and adding 0.1 31 times
+    let pi = 0.04;
+    while (pi <= 3.14) {
+      pi += 0.1;
+      Sync.sleep(10);
+    }
+    done(pi);
+  });
+
+  done = makePi.onComplete;
+
+  checkTime(function() {
+    let pi = makePi();
+    do_check_eq(pi.toFixed(2), "3.14");
+  }, 310);
+}
+
 // Make sure the exported Sync object/function has Function properties
 function test_function_Sync() {
   // We can't check the functions directly because the Function object for Sync
