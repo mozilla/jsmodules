@@ -69,6 +69,15 @@ function test_Sync_withCb() {
   }, 100);
 }
 
+// Extract sync. function callback that uses "this"
+function test_Sync_withCb_this() {
+  let [get, cb] = Sync.withCb(slowThisGet, { foo: "bar"});
+  checkTime(function() {
+    let val = get(cb, 100, "foo");
+    do_check_eq(val, "bar");
+  }, 100);
+}
+
 // Test sync of async function that indirectly takes the callback
 function test_Sync_withCb_indirect() {
   let [square, cb] = Sync.withCb(function(obj) {
