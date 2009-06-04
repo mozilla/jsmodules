@@ -61,22 +61,22 @@ function test_Sync_this() {
 }
 
 // Check that sync. function callbacks can be extracted
-function test_Sync_onComplete() {
-  let add = Sync(slowAdd);
+function test_Sync_withCb() {
+  let [add, cb] = Sync.withCb(slowAdd);
   checkTime(function() {
-    let sum = add(add.onComplete, 100, 1000, 234);
+    let sum = add(cb, 100, 1000, 234);
     do_check_eq(sum, 1234);
   }, 100);
 }
 
 // Test sync of async function that indirectly takes the callback
-function test_Sync_onComplete_indirect() {
-  let square = Sync(function(obj) {
+function test_Sync_withCb_indirect() {
+  let [square, cb] = Sync.withCb(function(obj) {
     setTimeout(function() obj.done(obj.num * obj.num), obj.wait);
   });
 
   let thing = {
-    done: square.onComplete,
+    done: cb,
     num: 3,
     wait: 100
   };
@@ -88,9 +88,10 @@ function test_Sync_onComplete_indirect() {
 }
 
 // Test sync of async function that takes no args
-function test_Sync_onComplete_noargs() {
-  let done;
-  let makePi = Sync(function() {
+function test_Sync_withCb_noargs() {
+  // XXX Bug 496134 declare the variable before doing destructured assignment
+  let makePi, done;
+  [makePi, done] = Sync.withCb(function() {
     // Find PI by starting at 0.04 and adding 0.1 31 times
     let pi = 0.04;
     while (pi <= 3.14) {
@@ -99,8 +100,6 @@ function test_Sync_onComplete_noargs() {
     }
     done(pi);
   });
-
-  done = makePi.onComplete;
 
   checkTime(function() {
     let pi = makePi();
