@@ -77,7 +77,7 @@ function test_Sync_exception() {
 function test_Sync_fail() {
   try {
     Sync(function(cb) {
-      cb.fail("FAIL!");
+      cb.throw("FAIL!");
     })();
     do_throw("Sync. callback should have thrown");
   }
@@ -103,7 +103,10 @@ function test_Sync_async_fail() {
   let startTime = new Date();
   try {
     Sync(function(cb) {
-      setTimeout(function() cb.fail("FAIL!"), 100)
+      setTimeout(function() {
+        cb.throw("FAIL!");
+        do_throw("cb.fail() should have stopped execution!");
+      }, 100)
     })();
     do_throw("Sync. callback should have thrown");
   }

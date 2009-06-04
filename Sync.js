@@ -71,9 +71,12 @@ function makeCallback() {
   onComplete._ = function onComplete__(secret) secret == SECRET ? _ : {};
 
   // Allow an alternate callback to trigger an exception to be thrown
-  onComplete.fail = function onComplete_fail(data) {
+  onComplete.throw = function onComplete_throw(data) {
     _.state = CB_FAIL;
     _.value = data;
+
+    // Cause the caller to get an exception and stop execution
+    throw data;
   };
 
   return onComplete;
