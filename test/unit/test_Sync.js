@@ -124,3 +124,27 @@ function test_function_Sync() {
   do_check_eq(Sync.call.toSource(), Function.prototype.call.toSource());
   do_check_eq(Sync.apply.toSource(), Function.prototype.apply.toSource());
 }
+
+// Make sure private callback data isn't accessible
+function test_callback_privates() {
+  // Make sure we can't read any values out of the callback
+  let checkAccess = function(cb) {
+    do_check_eq(cb.state, null);
+    do_check_eq(cb.value, null);
+    do_check_eq(cb._().state, null);
+    do_check_eq(cb._().value, null);
+  };
+
+  // Save the callback to use it after the sync. call
+  let theCb;
+  checkTime(Sync(function(cb) {
+    // Make sure there's no access when the function is called
+    checkAccess(cb);
+
+    // Save the callback and continue execution after waiting a little
+    setTimeout(theCb = cb, 100);
+  }), 100);
+
+  // Make sure there's no access after the sync. call
+  checkAccess(theCb);
+}

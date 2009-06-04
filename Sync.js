@@ -47,18 +47,27 @@ const Cu = Components.utils;
 const CB_READY = {};
 const CB_COMPLETE = {};
 
+// Share a secret only for functions in this file to prevent outside access
+const SECRET = {};
+
 /**
  * Create a callback that remembers state like whether it's been called
  */
 function makeCallback() {
-  // The main callback remembers the value it's passed and that it got data
-  let onComplete = function Sync_onComplete(data) {
-    onComplete.value = data;
-    onComplete.state = CB_COMPLETE;
+  // Initialize private callback data to prepare to be called
+  let _ = {
+    state: CB_READY,
+    value: null
   };
 
-  // Initialize the callback to wait to be called
-  onComplete.state = CB_READY;
+  // The main callback remembers the value it's passed and that it got data
+  let onComplete = function makeCallback_onComplete(data) {
+    _.state = CB_COMPLETE;
+    _.value = data;
+  };
+
+  // Only allow access to the private data if the secret matches
+  onComplete._ = function onComplete__(secret) secret == SECRET ? _ : {};
 
   return onComplete;
 }
@@ -97,14 +106,15 @@ function Sync(func, thisArg, callback) {
     func.apply(thisArg, args);
 
     // Keep waiting until our callback is triggered
-    while (instanceCallback.state == CB_READY)
+    let callbackData = instanceCallback._(SECRET);
+    while (callbackData.state == CB_READY)
       thread.processNextEvent(true);
 
     // Reset the state of the callback to prepare for another call
-    instanceCallback.state = CB_READY;
+    callbackData.state = CB_READY;
 
     // Return the value passed to the callback
-    return instanceCallback.value;
+    return callbackData.value;
   };
 }
 
