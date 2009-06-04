@@ -60,6 +60,59 @@ function test_Sync_this() {
   }, 100);
 }
 
+// Async. functions that throw before going async should appear like normal
+function test_Sync_exception() {
+  try {
+    Sync(function(cb) {
+      throw "EARLY!";
+    })();
+    do_throw("Async. function should have thrown");
+  }
+  catch(ex) {
+    do_check_eq(ex, "EARLY!");
+  }
+}
+
+// Check that sync. callbacks can throw an exception to the sync. caller
+function test_Sync_fail() {
+  try {
+    Sync(function(cb) {
+      cb.fail("FAIL!");
+    })();
+    do_throw("Sync. callback should have thrown");
+  }
+  catch(ex) {
+    do_check_eq(ex, "FAIL!");
+  }
+}
+
+// Async. functions that throw go unnoticed
+function test_Sync_async_exception() {
+  // XXX We can't detect if an async. function fails.. :(
+  return;
+
+  Sync(function(cb) {
+    setTimeout(function() {
+      throw "undetected";
+    }, 100);
+  })();
+}
+
+// Check that async. functions can trigger an exception to the sync. caller
+function test_Sync_async_fail() {
+  let startTime = new Date();
+  try {
+    Sync(function(cb) {
+      setTimeout(function() cb.fail("FAIL!"), 100)
+    })();
+    do_throw("Sync. callback should have thrown");
+  }
+  catch(ex) {
+    do_check_eq(ex, "FAIL!");
+    do_check_true(new Date() - startTime >= 95);
+  }
+}
+
 // Check that sync. function callbacks can be extracted
 function test_Sync_withCb() {
   let [add, cb] = Sync.withCb(slowAdd);

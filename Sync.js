@@ -46,6 +46,7 @@ const Cu = Components.utils;
 // Define some constants to specify various sync. callback states
 const CB_READY = {};
 const CB_COMPLETE = {};
+const CB_FAIL = {};
 
 // Share a secret only for functions in this file to prevent outside access
 const SECRET = {};
@@ -68,6 +69,12 @@ function makeCallback() {
 
   // Only allow access to the private data if the secret matches
   onComplete._ = function onComplete__(secret) secret == SECRET ? _ : {};
+
+  // Allow an alternate callback to trigger an exception to be thrown
+  onComplete.fail = function onComplete_fail(data) {
+    _.state = CB_FAIL;
+    _.value = data;
+  };
 
   return onComplete;
 }
@@ -111,7 +118,12 @@ function Sync(func, thisArg, callback) {
       thread.processNextEvent(true);
 
     // Reset the state of the callback to prepare for another call
+    let state = callbackData.state;
     callbackData.state = CB_READY;
+
+    // Throw the value the callback decided to fail with
+    if (state == CB_FAIL)
+      throw callbackData.value;
 
     // Return the value passed to the callback
     return callbackData.value;
