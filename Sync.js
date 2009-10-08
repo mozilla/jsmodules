@@ -52,6 +52,27 @@ const CB_FAIL = {};
 const SECRET = {};
 
 /**
+ * Check if the app is ready (not quitting)
+ */
+function checkAppReady() {
+  // Watch for app-quit notification to stop any sync. calls
+  let os = Cc["@mozilla.org/observer-service;1"].
+    getService(Ci.nsIObserverService);
+  os.addObserver({
+    observe: function observe() {
+      // Now that the app is quitting, make checkAppReady throw
+      checkAppReady = function() {
+        throw Components.Exception("App. Quitting", Cr.NS_ERROR_ABORT);
+      };
+      os.removeObserver(this, "quit-application");
+    }
+  }, "quit-application", false);
+
+  // In the common case, checkAppReady just returns true
+  return (checkAppReady = function() true)();
+};
+
+/**
  * Create a callback that remembers state like whether it's been called
  */
 function makeCallback() {
@@ -115,9 +136,9 @@ function Sync(func, thisArg, callback) {
     // Call the async function bound to thisArg with the passed args
     func.apply(thisArg, args);
 
-    // Keep waiting until our callback is triggered
+    // Keep waiting until our callback is triggered unless the app is quitting
     let callbackData = instanceCallback._(SECRET);
-    while (callbackData.state == CB_READY)
+    while (checkAppReady() && callbackData.state == CB_READY)
       thread.processNextEvent(true);
 
     // Reset the state of the callback to prepare for another call
