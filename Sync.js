@@ -162,11 +162,12 @@ Sync.withCb = function Sync_withCb(func, thisArg) {
 function setTimeout(func, delay) {
   let timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
   let callback = {
-    _func: func,
-    notify: function(timer) {
-      // Call the function such that "this" inside the function is the global
-      // object, just as it would be with window.setTimeout.
-      (this._func)();
+    notify: function notify() {
+      // This line actually just keeps a reference to timer (prevent GC)
+      timer = null;
+
+      // Call the function so that "this" is global
+      func();
     }
   }
   timer.initWithCallback(callback, delay, Ci.nsITimer.TYPE_ONE_SHOT);
